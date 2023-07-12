@@ -13,18 +13,46 @@ export default {
           error: "That user does not exist",
         };
       }
-      await client.user.update({
+      const currentFollowing = await client.user.findFirst({
         where: {
           id: loggedInUser.id,
-        },
-        data: {
           following: {
-            connect: {
+            some: {
               username,
             },
           },
         },
+        select: {
+          id: true,
+        },
       });
+      if (!currentFollowing) {
+        await client.user.update({
+          where: {
+            id: loggedInUser.id,
+          },
+          data: {
+            following: {
+              connect: {
+                username,
+              },
+            },
+          },
+        });
+      } else {
+        await client.user.update({
+          where: {
+            id: loggedInUser.id,
+          },
+          data: {
+            following: {
+              disconnect: {
+                username,
+              },
+            },
+          },
+        });
+      }
       return {
         ok: true,
       };
