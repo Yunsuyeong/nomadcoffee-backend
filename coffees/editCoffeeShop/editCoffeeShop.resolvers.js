@@ -1,20 +1,23 @@
 import client from "../../client";
 import { protectedResolver } from "../../users/users.utils";
-import { processHashtags } from "../coffees.utils";
+import { processCategory } from "../coffees.utils";
 
 export default {
   Mutation: {
     editCoffeeShop: protectedResolver(
-      async (_, { id, name }, { loggedInUser }) => {
+      async (
+        _,
+        { id, name, latitude, longitude, file, category },
+        { loggedInUser }
+      ) => {
         const existShop = await client.coffeeShop.findFirst({
           where: {
             id,
-            userId: loggedInUser.id,
           },
           include: {
             categories: {
               select: {
-                name: true,
+                id: true,
               },
             },
           },
@@ -31,10 +34,14 @@ export default {
           },
           data: {
             name,
-            categories: {
-              disconnect: existShop.categories,
-              connectOrCreate: processHashtags(name),
-            },
+            latitude,
+            longitude,
+            ...(category && {
+              categories: {
+                disconnect: existShop.categories,
+                connectOrCreate: processCategory(category),
+              },
+            }),
           },
         });
         return {

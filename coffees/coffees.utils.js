@@ -1,7 +1,16 @@
-export const processHashtags = (name) => {
-  const categories = name.match(/#[\w]+/g) || [];
-  return categories.map((name) => ({
-    where: { name },
-    create: { name },
-  }));
+export const processCategory = (category) => {
+  const slug =
+    category
+      .match(/[^\s]+/g)
+      ?.join("-")
+      .toLowerCase() + "";
+  return {
+    where: {
+      name: category,
+    },
+    create: {
+      name: category,
+      slug,
+    },
+  };
 };

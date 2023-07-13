@@ -1,31 +1,33 @@
 import client from "../../client";
 import { protectedResolver } from "../../users/users.utils";
+import { processCategory } from "../coffees.utils";
 
 export default {
   Mutation: {
     createCoffeeShop: protectedResolver(
-      async (_, { name }, { loggedInUser }) => {
-        let categoryObjs = [];
-        if (name) {
-          const categories = name.match(/#[\w]+/g);
-          categoryObjs = categories.map((category) => ({
-            where: { category },
-            create: { category },
-          }));
-        }
-        return client.coffeeShop.create({
+      async (
+        _,
+        { id, name, latitude, longitude, file, category },
+        { loggedInUser }
+      ) => {
+        const shop = await client.coffeeShop.create({
           data: {
             name,
+            latitude,
+            longitude,
             user: {
               connect: {
                 id: loggedInUser.id,
               },
             },
             categories: {
-              connectOrCreate: categoryObjs,
+              connectOrCreate: processCategory(category),
             },
           },
         });
+        return {
+          ok: true,
+        };
       }
     ),
   },

@@ -1,23 +1,12 @@
 import client from "../../client";
-import { protectedResolver } from "../../users/users.utils";
 
 export default {
   Query: {
-    seeCoffeeShops: protectedResolver((_, { offset }, { loggedInUser }) =>
+    seeCoffeeShops: (_, { lastId }) =>
       client.coffeeShop.findMany({
-        take: 3,
-        skip: offset,
-        where: {
-          OR: [
-            {
-              userId: loggedInUser.id,
-            },
-          ],
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-      })
-    ),
+        take: 5,
+        skip: lastId ? 1 : 0,
+        ...(lastId && { cursor: { id: lastId } }),
+      }),
   },
 };
